@@ -1,0 +1,59 @@
+import 'package:domty/features/other/top_of_the_page/page_app_bar.dart';
+
+import '../../../all_export.dart';
+
+class WidgetDrawer extends StatelessWidget {
+  const WidgetDrawer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      backgroundColor: AppColors.primary2,
+      child: ListView(
+        children: <Widget>[
+          const PageAppBar(),
+          DrawerHeader(
+            padding: EdgeInsets.only(top: 70.h, right: 25.h),
+            child: const Text(
+              'مرحبًا بك في همزة',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+              ),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.home, color: Colors.white),
+            title:
+                const Text('الرئيسية', style: TextStyle(color: Colors.white)),
+            onTap: () {
+              Get.toNamed(AppRoute.hamzaHome);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.home, color: Colors.white),
+            title: const Text('من نحن', style: TextStyle(color: Colors.white)),
+            onTap: () {
+              Get.offAllNamed(AppRoute.aboutUsPage);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.book, color: Colors.white),
+            title: const Text("اضف كتاب للبيع",
+                style: TextStyle(color: Colors.white)),
+            onTap: () {
+              Get.toNamed(AppRoute.bookAdd);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.book_online_sharp, color: Colors.white),
+            title: const Text("كتبي", style: TextStyle(color: Colors.white)),
+            onTap: () {
+              Get.toNamed(AppRoute.bookView);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
