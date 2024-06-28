@@ -406,11 +406,11 @@ class _SummaryPageState extends State<SummaryPage> {
             onPressed: _copyToClipboard,
             tooltip: 'نسخ الملخص',
           ),
-          IconButton(
-            icon: const Icon(Icons.share),
-            onPressed: _takeAndShareScreenshot,
-            tooltip: 'مشاركة الملخص',
-          ),
+          // IconButton(
+          //   icon: const Icon(Icons.share),
+          //   onPressed: _takeAndShareScreenshot,
+          //   tooltip: 'مشاركة الملخص',
+          // ),
         ],
       ),
       body: Screenshot(

@@ -1,5 +1,5 @@
-import 'package:domty/features/abut/AboutUsPage.dart';
-import 'package:domty/features/home/screen/main_page.dart';
+import 'package:domty/features/abut/about_us_page.dart';
+import 'package:domty/features/home2/main_page.dart';
 
 import 'all_export.dart';
 

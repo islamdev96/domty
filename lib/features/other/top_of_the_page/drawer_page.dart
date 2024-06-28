@@ -1,5 +1,3 @@
-import 'package:domty/features/other/top_of_the_page/page_app_bar.dart';
-
 import '../../../all_export.dart';
 
 class WidgetDrawer extends StatelessWidget {
@@ -11,11 +9,11 @@ class WidgetDrawer extends StatelessWidget {
       backgroundColor: AppColors.primary2,
       child: ListView(
         children: <Widget>[
-          const PageAppBar(),
+          const PageAppBar2(),
           DrawerHeader(
             padding: EdgeInsets.only(top: 70.h, right: 25.h),
             child: const Text(
-              'مرحبًا بك في همزة',
+              'مرحبًا بك ',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 24,
@@ -37,21 +35,21 @@ class WidgetDrawer extends StatelessWidget {
               Get.offAllNamed(AppRoute.aboutUsPage);
             },
           ),
-          ListTile(
-            leading: const Icon(Icons.book, color: Colors.white),
-            title: const Text("اضف كتاب للبيع",
-                style: TextStyle(color: Colors.white)),
-            onTap: () {
-              Get.toNamed(AppRoute.bookAdd);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.book_online_sharp, color: Colors.white),
-            title: const Text("كتبي", style: TextStyle(color: Colors.white)),
-            onTap: () {
-              Get.toNamed(AppRoute.bookView);
-            },
-          ),
+          // ListTile(
+          //   leading: const Icon(Icons.book, color: Colors.white),
+          //   title: const Text("اضف كتاب للبيع",
+          //       style: TextStyle(color: Colors.white)),
+          //   onTap: () {
+          //     Get.toNamed(AppRoute.bookAdd);
+          //   },
+          // ),
+          // ListTile(
+          //   leading: const Icon(Icons.book_online_sharp, color: Colors.white),
+          //   title: const Text("كتبي", style: TextStyle(color: Colors.white)),
+          //   onTap: () {
+          //     Get.toNamed(AppRoute.bookView);
+          //   },
+          // ),
         ],
       ),
     );
