@@ -34,21 +34,32 @@ class _SummaryPageState extends State<SummaryPage> {
   TextEditingController juiceReturnController = TextEditingController();
   TextEditingController juiceGoodController = TextEditingController();
 
+  final Map<String, String> arabicNames = {
+    'classic': 'كلاسيك',
+    'croissant': 'كرواسون',
+    'supreme': 'سوبريم',
+    'double': 'دبل',
+    'fino': 'فينو',
+    'basket': 'باسكت',
+    'aseer': 'عصير',
+  };
+
   @override
   void initState() {
     super.initState();
     soldControllers = widget.initialSold.map((key, value) => MapEntry(
         key,
         TextEditingController(
-            text: (value * _getPiecesPerBox(key)).toString())));
-    returnControllers = widget.initialReturns.map((key, value) =>
-        MapEntry(key, TextEditingController(text: value.toString())));
-    goodControllers = widget.initialGood.map((key, value) =>
-        MapEntry(key, TextEditingController(text: value.toString())));
+            text:
+                value == 0 ? '' : (value * _getPiecesPerBox(key)).toString())));
+    returnControllers = widget.initialReturns.map((key, value) => MapEntry(
+        key, TextEditingController(text: value == 0 ? '' : value.toString())));
+    goodControllers = widget.initialGood.map((key, value) => MapEntry(
+        key, TextEditingController(text: value == 0 ? '' : value.toString())));
 
-    juiceSoldController.text = '0';
-    juiceReturnController.text = '0';
-    juiceGoodController.text = '0';
+    juiceSoldController.text = '';
+    juiceReturnController.text = '';
+    juiceGoodController.text = '';
   }
 
   @override
@@ -87,6 +98,14 @@ class _SummaryPageState extends State<SummaryPage> {
     }
   }
 
+  double _getPricePerPiece(String key) {
+    if (key == 'fino') {
+      return 20.0;
+    } else {
+      return 8.5;
+    }
+  }
+
   Widget _buildSummaryRow(String name) {
     return Container(
       padding: const EdgeInsets.all(8.0),
@@ -99,7 +118,7 @@ class _SummaryPageState extends State<SummaryPage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            name,
+            arabicNames[name] ?? name,
             style: const TextStyle(fontSize: 16, fontFamily: 'Cairo'),
           ),
           _buildQuantityColumn('مباع', soldControllers[name]!, (value) {
@@ -145,7 +164,7 @@ class _SummaryPageState extends State<SummaryPage> {
             ),
             onChanged: (value) {
               if (value.isEmpty) {
-                controller.text = '0';
+                controller.text = '';
               }
               onChanged(value);
             },
@@ -156,29 +175,25 @@ class _SummaryPageState extends State<SummaryPage> {
   }
 
   double calculateTotalRevenue() {
-    const piecePrice = 8.5;
-    const juicePrice = 180.0;
-
-    int totalPiecesSold = 0;
-    int totalPiecesReturned = 0;
+    double totalRevenue = 0.0;
 
     soldControllers.forEach((key, controller) {
-      totalPiecesSold += int.tryParse(controller.text) ?? 0;
+      int soldQuantity = int.tryParse(controller.text) ?? 0;
+      int returnQuantity = int.tryParse(returnControllers[key]!.text) ?? 0;
+      int goodQuantity = int.tryParse(goodControllers[key]!.text) ?? 0;
+      double pricePerPiece = _getPricePerPiece(key);
+      totalRevenue +=
+          (soldQuantity - returnQuantity - goodQuantity) * pricePerPiece;
     });
 
-    returnControllers.forEach((key, controller) {
-      totalPiecesReturned += int.tryParse(controller.text) ?? 0;
-    });
-
+    // Add juice cartons to the revenue
     int juiceSoldQuantity = int.tryParse(juiceSoldController.text) ?? 0;
-    int juiceReturnedQuantity = int.tryParse(juiceReturnController.text) ?? 0;
-    int netJuiceSold =
-        (juiceSoldQuantity - juiceReturnedQuantity).clamp(0, juiceSoldQuantity);
+    int juiceReturnQuantity = int.tryParse(juiceReturnController.text) ?? 0;
+    int juiceGoodQuantity = int.tryParse(juiceGoodController.text) ?? 0;
+    totalRevenue +=
+        (juiceSoldQuantity - juiceReturnQuantity - juiceGoodQuantity) * 180.0;
 
-    int netPiecesSold =
-        (totalPiecesSold - totalPiecesReturned).clamp(0, totalPiecesSold);
-
-    return (netPiecesSold * piecePrice) + (netJuiceSold * juicePrice);
+    return totalRevenue;
   }
 
   Widget _buildSummaryItem(String label, int value) {
@@ -276,9 +291,24 @@ class _SummaryPageState extends State<SummaryPage> {
                   'عصير',
                   style: TextStyle(fontSize: 16, fontFamily: 'Cairo'),
                 ),
-                _buildQuantityColumn('مباع', juiceSoldController, (value) {}),
-                _buildQuantityColumn('هالك', juiceReturnController, (value) {}),
-                _buildQuantityColumn('صالح', juiceGoodController, (value) {}),
+                _buildQuantityColumn('مباع', juiceSoldController, (value) {
+                  if (value.isNotEmpty && int.tryParse(value) == null) {
+                    return;
+                  }
+                  setState(() {});
+                }),
+                _buildQuantityColumn('هالك', juiceReturnController, (value) {
+                  if (value.isNotEmpty && int.tryParse(value) == null) {
+                    return;
+                  }
+                  setState(() {});
+                }),
+                _buildQuantityColumn('صالح', juiceGoodController, (value) {
+                  if (value.isNotEmpty && int.tryParse(value) == null) {
+                    return;
+                  }
+                  setState(() {});
+                }),
               ],
             ),
           ),
@@ -293,23 +323,26 @@ class _SummaryPageState extends State<SummaryPage> {
           ),
           const SizedBox(height: 20),
           _buildSummaryItem(
-              'إجمالي القطع المباعة',
-              soldControllers.values
-                      .map((controller) => int.tryParse(controller.text) ?? 0)
-                      .reduce((a, b) => a + b) +
-                  (int.tryParse(juiceSoldController.text) ?? 0)),
+            'إجمالي القطع المباعة',
+            soldControllers.values
+                    .map((controller) => int.tryParse(controller.text) ?? 0)
+                    .reduce((a, b) => a + b) +
+                (int.tryParse(juiceSoldController.text) ?? 0),
+          ),
           _buildSummaryItem(
-              'إجمالي القطع الهالكة',
-              returnControllers.values
-                      .map((controller) => int.tryParse(controller.text) ?? 0)
-                      .reduce((a, b) => a + b) +
-                  (int.tryParse(juiceReturnController.text) ?? 0)),
+            'إجمالي القطع الهالكة',
+            returnControllers.values
+                    .map((controller) => int.tryParse(controller.text) ?? 0)
+                    .reduce((a, b) => a + b) +
+                (int.tryParse(juiceReturnController.text) ?? 0),
+          ),
           _buildSummaryItem(
-              'إجمالي القطع الصالحة',
-              goodControllers.values
-                      .map((controller) => int.tryParse(controller.text) ?? 0)
-                      .reduce((a, b) => a + b) +
-                  (int.tryParse(juiceGoodController.text) ?? 0)),
+            'إجمالي القطع الصالحة',
+            goodControllers.values
+                    .map((controller) => int.tryParse(controller.text) ?? 0)
+                    .reduce((a, b) => a + b) +
+                (int.tryParse(juiceGoodController.text) ?? 0),
+          ),
         ],
       ),
     );
@@ -319,16 +352,22 @@ class _SummaryPageState extends State<SummaryPage> {
     String summaryText = 'ملخص نهاية اليوم\n\n';
 
     for (var key in soldControllers.keys) {
-      summaryText += '$key:\n';
-      summaryText += 'مباع: ${soldControllers[key]!.text}\n';
-      summaryText += 'هالك: ${returnControllers[key]!.text}\n';
-      summaryText += 'صالح: ${goodControllers[key]!.text}\n\n';
+      summaryText += '${arabicNames[key] ?? key}:\n';
+      summaryText +=
+          'مباع: ${soldControllers[key]!.text.isEmpty ? '0' : soldControllers[key]!.text}\n';
+      summaryText +=
+          'هالك: ${returnControllers[key]!.text.isEmpty ? '0' : returnControllers[key]!.text}\n';
+      summaryText +=
+          'صالح: ${goodControllers[key]!.text.isEmpty ? '0' : goodControllers[key]!.text}\n\n';
     }
 
     summaryText += 'عصير:\n';
-    summaryText += 'مباع: ${juiceSoldController.text}\n';
-    summaryText += 'هالك: ${juiceReturnController.text}\n';
-    summaryText += 'صالح: ${juiceGoodController.text}\n\n';
+    summaryText +=
+        'مباع: ${juiceSoldController.text.isEmpty ? '0' : juiceSoldController.text}\n';
+    summaryText +=
+        'هالك: ${juiceReturnController.text.isEmpty ? '0' : juiceReturnController.text}\n';
+    summaryText +=
+        'صالح: ${juiceGoodController.text.isEmpty ? '0' : juiceGoodController.text}\n\n';
 
     summaryText +=
         'نقدية: ${intl.NumberFormat('#,##0.00', 'ar_EG').format(calculateTotalRevenue())}\n\n';

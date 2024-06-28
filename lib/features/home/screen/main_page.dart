@@ -1,4 +1,6 @@
-import 'package:domty/features/home/screen/SummaryPage.dart';
+// ignore_for_file: unused_local_variable, library_private_types_in_public_api
+
+import 'package:domty/features/home/screen/summary_page.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart' as intl;
