@@ -25,7 +25,7 @@ class WidgetDrawer extends StatelessWidget {
             title:
                 const Text('الرئيسية', style: TextStyle(color: Colors.white)),
             onTap: () {
-              Get.toNamed(AppRoute.hamzaHome);
+              Get.toNamed(AppRoute.domtyHome);
             },
           ),
           ListTile(

@@ -12,7 +12,7 @@ class AppRoute {
   static const String homePageAdmin = "/homePageAdmin";
   // Home
   // static const String homeScreen = "/homeScreen";
-  static const String hamzaHome = "/hamzaHome";
+  static const String domtyHome = "/domtyHome";
   static const String book = "/book";
   static const String productDetails = "/productDetails";
   static const String aboutUsPage = "/aboutUsPage";

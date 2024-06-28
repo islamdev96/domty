@@ -5,6 +5,7 @@ import '../../all_export.dart';
 class AboutUsPage extends StatelessWidget {
   final String websiteUrl = 'https://islam.islamglab.com/';
   final String phoneNumber = '201030406057';
+  final String phoneNumber1 = '01030406057';
   final String email = 'islamsayedglab@gmail.com';
 
   const AboutUsPage({super.key});
@@ -27,8 +28,8 @@ class AboutUsPage extends StatelessWidget {
     _launchURL(url);
   }
 
-  void _callPhoneNumber(String phoneNumber) async {
-    String url = 'tel:$phoneNumber';
+  void _callPhoneNumber(String phoneNumber1) async {
+    String url = 'tel:$phoneNumber1';
     _launchURL(url);
   }
 
@@ -50,7 +51,7 @@ class AboutUsPage extends StatelessWidget {
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 60),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
@@ -190,7 +191,7 @@ class AboutUsPage extends StatelessWidget {
             const SizedBox(height: 10),
             Center(
               child: Image.asset(
-                'assets/images/1.png',
+                AppImageAsset.personImage,
                 height: 200,
                 width: 200,
                 fit: BoxFit.contain,
@@ -200,7 +201,7 @@ class AboutUsPage extends StatelessWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => Get.offAllNamed(AppRoute.aboutUsPage),
+        onPressed: () => Get.offAllNamed(AppRoute.domtyHome),
         tooltip: 'رجوع',
         backgroundColor: Colors.blue[900],
         child: const Icon(Icons.arrow_back),
