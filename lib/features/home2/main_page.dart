@@ -1,9 +1,5 @@
-// ignore_for_file: unused_local_variable, library_private_types_in_public_api
-
 import 'package:domty/features/home/screen/summary_page.dart';
 import 'package:intl/intl.dart' as intl;
-
-// استيراد ملفات أخرى
 import '../../all_export.dart';
 import 'data_table.dart';
 
@@ -39,18 +35,19 @@ class _MainPageState extends State<MainPage> {
     'fino': TextEditingController(),
   };
 
-  late double _currentScale; // أضف `late`
-  late double _baseScale; // أضف `late`
-
+  late double _currentScale;
+  late double _baseScale;
   final double _minScale = 0.5;
   final double _maxScale = 2.0;
+
+  final Map<String, int> _lastDeletedData = {};
 
   @override
   void initState() {
     super.initState();
     _loadDataFromSharedPreferences();
-    _currentScale = 1.0; // تعيين قيمة افتراضية
-    _baseScale = 1.0; // تعيين قيمة افتراضية
+    _currentScale = 1.0;
+    _baseScale = 1.0;
   }
 
   void _loadDataFromSharedPreferences() async {
@@ -59,22 +56,21 @@ class _MainPageState extends State<MainPage> {
       _boxControllers.forEach((key, controller) {
         controller.text = (prefs.getInt(key) ?? 0) > 0
             ? (prefs.getInt(key) ?? 0).toString()
-            : ""; // تعديل هنا
+            : "";
       });
       _returnControllers.forEach((key, controller) {
         controller.text = (prefs.getInt('${key}Return') ?? 0) > 0
             ? (prefs.getInt('${key}Return') ?? 0).toString()
-            : ""; // تعديل هنا
+            : "";
       });
       _goodControllers.forEach((key, controller) {
         controller.text = (prefs.getInt('${key}Good') ?? 0) > 0
             ? (prefs.getInt('${key}Good') ?? 0).toString()
-            : ""; // تعديل هنا
+            : "";
       });
     });
   }
 
-// ... (باقي الكود في main_page.dart  كما هو)
   void _saveDataToSharedPreferences() async {
     final prefs = await SharedPreferences.getInstance();
     _boxControllers.forEach((key, controller) {
@@ -88,23 +84,41 @@ class _MainPageState extends State<MainPage> {
     });
   }
 
-  // Function to reset data
   void _resetData() async {
     final prefs = await SharedPreferences.getInstance();
+    _lastDeletedData.clear();
     setState(() {
       _boxControllers.forEach((key, controller) {
+        _lastDeletedData[key] = int.tryParse(controller.text) ?? 0;
         controller.text = '';
         prefs.setInt(key, 0);
       });
       _returnControllers.forEach((key, controller) {
+        _lastDeletedData['${key}Return'] = int.tryParse(controller.text) ?? 0;
         controller.text = '';
         prefs.setInt('${key}Return', 0);
       });
       _goodControllers.forEach((key, controller) {
+        _lastDeletedData['${key}Good'] = int.tryParse(controller.text) ?? 0;
         controller.text = '';
         prefs.setInt('${key}Good', 0);
       });
     });
+  }
+
+  void _restoreDeletedData() {
+    setState(() {
+      _boxControllers.forEach((key, controller) {
+        controller.text = _lastDeletedData[key]?.toString() ?? '';
+      });
+      _returnControllers.forEach((key, controller) {
+        controller.text = _lastDeletedData['${key}Return']?.toString() ?? '';
+      });
+      _goodControllers.forEach((key, controller) {
+        controller.text = _lastDeletedData['${key}Good']?.toString() ?? '';
+      });
+    });
+    _saveDataToSharedPreferences();
   }
 
   String _getFormattedDay() {
@@ -115,113 +129,154 @@ class _MainPageState extends State<MainPage> {
 
   String _getFormattedDate() {
     DateTime now = DateTime.now();
-    String formattedDate = intl.DateFormat('d/M/yyyy').format(now);
-    return formattedDate;
+    return intl.DateFormat('d/M/yyyy').format(now);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ListView(
-        padding: const EdgeInsets.all(16.0),
-        children: [
-          const SizedBox(height: 30),
-          Column(
-            children: [
-              const PageAppBar(),
-              SizedBox(height: 25.h),
-              Text(
-                _getFormattedDay(),
-                style:
-                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 10),
-              Text(
-                _getFormattedDate(),
-                style:
-                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'بداية اليوم',
-                style: TextStyle(
-                  fontFamily: 'Cairo',
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              // استدعاء DataTabel من ملفه
-              DataTableWidget(
-                boxControllers: _boxControllers,
-                returnControllers: _returnControllers,
-                goodControllers: _goodControllers,
-                currentScale: _currentScale, // تمرير _currentScale
-                baseScale: _baseScale, // تمرير _baseScale
-                minScale: _minScale,
-                maxScale: _maxScale,
-                saveDataToSharedPreferences: _saveDataToSharedPreferences,
-              ),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(16.0),
+          children: [
+            const PageAppBar(),
+            SizedBox(height: 25.h),
+            _buildDateSection(),
+            const SizedBox(height: 20),
+            _buildDataTableSection(),
+            const SizedBox(height: 20),
+            _buildActionButtons(),
+          ],
+        ),
+      ),
+    );
+  }
 
-              // Add the Reset Button here
-              ElevatedButton(
-                onPressed: _resetData,
-                style: ElevatedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-                  backgroundColor: AppColors.red,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ), // لون الزر
-                ),
-                child: const Text(
-                  "مسح بيانات الجدول",
-                  style: TextStyle(
-                      fontSize: 18, color: AppColors.white), // حجم ولون النص
-                ),
-              ),
-              const SizedBox(height: 20), // تضاف مسافة بين الأزرار
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => SummaryPage(
-                        initialSold: _boxControllers.map((key, controller) =>
-                            MapEntry(key, int.tryParse(controller.text) ?? 0)),
-                        initialReturns: _returnControllers.map((key,
-                                controller) =>
-                            MapEntry(key, int.tryParse(controller.text) ?? 0)),
-                        initialGood: _goodControllers.map((key, controller) =>
-                            MapEntry(key, int.tryParse(controller.text) ?? 0)),
-                      ),
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-                  backgroundColor: AppColors.green1,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ), // لون الزر
-                ),
-                child: const Text(
-                  'عرض ملخص نهاية اليوم',
-                  style: TextStyle(
-                      fontSize: 18, color: AppColors.white), // حجم ولون النص
-                ),
-              ),
-            ],
+  Widget _buildDateSection() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        children: [
+          Text(
+            _getFormattedDay(),
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _getFormattedDate(),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildDataTableSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'بداية اليوم',
+          style: TextStyle(
+            fontFamily: 'Cairo',
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 10),
+        DataTableWidget(
+          boxControllers: _boxControllers,
+          returnControllers: _returnControllers,
+          goodControllers: _goodControllers,
+          currentScale: _currentScale,
+          baseScale: _baseScale,
+          minScale: _minScale,
+          maxScale: _maxScale,
+          saveDataToSharedPreferences: _saveDataToSharedPreferences,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButtons() {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: _resetData,
+                icon: const Icon(Icons.delete, color: Colors.white),
+                label: const Text(
+                  "مسح بيانات الجدول",
+                  style: TextStyle(color: AppColors.white),
+                ),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  backgroundColor: AppColors.red,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: _restoreDeletedData,
+                icon: const Icon(Icons.restore, color: Colors.white),
+                label: const Text(
+                  "استرجاع البيانات",
+                  style: TextStyle(color: AppColors.white),
+                ),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  backgroundColor: AppColors.green,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        ElevatedButton.icon(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => SummaryPage(
+                  initialSold: _boxControllers.map((key, controller) =>
+                      MapEntry(key, int.tryParse(controller.text) ?? 0)),
+                  initialReturns: _returnControllers.map((key, controller) =>
+                      MapEntry(key, int.tryParse(controller.text) ?? 0)),
+                  initialGood: _goodControllers.map((key, controller) =>
+                      MapEntry(key, int.tryParse(controller.text) ?? 0)),
+                ),
+              ),
+            );
+          },
+          icon: const Icon(Icons.summarize, color: Colors.white),
+          label: const Text(
+            'عرض ملخص نهاية اليوم',
+            style: TextStyle(color: AppColors.white),
+          ),
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            backgroundColor: AppColors.primary,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
