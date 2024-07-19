@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 int calculateTotalPieces(String key, int boxCount) {
   switch (key) {
     case 'classic':
+    case 'supreme': //  تم تغيير supreme  إلى 30 قطعة في الصندوق
       return boxCount * 30;
     case 'croissant':
-    case 'supreme':
     case 'double':
       return boxCount * 24;
     case 'fino':
@@ -20,9 +20,9 @@ int calculateTotalPieces(String key, int boxCount) {
 List<String> calculateBoxEquivalent(String key, int boxCount) {
   switch (key) {
     case 'classic':
+    case 'supreme': //  تم تغيير supreme  إلى 30 قطعة في الصندوق
       return ['${boxCount * 30} قطعة', '$boxCount صندوق'];
     case 'croissant':
-    case 'supreme':
     case 'double':
       int boxEquivalent = (boxCount * 24 / 30).floor();
       int remainingPieces = (boxCount * 24) % 30;
@@ -37,19 +37,27 @@ List<String> calculateBoxEquivalent(String key, int boxCount) {
   }
 }
 
-// Function to calculate the total box equivalent for all types
 List<String> calculateTotalBoxEquivalentForAll(
     Map<String, TextEditingController> boxControllers) {
   int totalPieces = 0;
+  int finoPieces = 0; // Variable to store total fino pieces
+
   boxControllers.forEach((key, controller) {
-    totalPieces +=
-        calculateTotalPieces(key, int.tryParse(controller.text) ?? 0);
+    int pieces = calculateTotalPieces(key, int.tryParse(controller.text) ?? 0);
+    totalPieces += pieces;
+
+    if (key == 'fino') {
+      finoPieces = pieces; // Store fino pieces separately
+    }
   });
 
   int totalBoxEquivalent = (totalPieces / 30).floor();
   int remainingPieces = totalPieces % 30;
+
+  int finoBoxes = (finoPieces / 8).floor(); // Calculate fino boxes
+
   return [
     '$totalPieces قطعة',
-    '$totalBoxEquivalent صندوق \n $remainingPieces قطعة'
+    '$totalBoxEquivalent صندوق \n $remainingPieces قطعة \n $finoBoxes باسكت فينو'
   ];
 }

@@ -1,9 +1,6 @@
 // ignore_for_file: unused_local_variable, library_private_types_in_public_api
 
 import 'package:domty/features/home/screen/summary_page.dart';
-import 'package:domty/features/other/top_of_the_page/title_and_picture_at_the_head_of_the_page.dart';
-import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart' as intl;
 
 // استيراد ملفات أخرى
@@ -96,15 +93,15 @@ class _MainPageState extends State<MainPage> {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _boxControllers.forEach((key, controller) {
-        controller.text = '0';
+        controller.text = '';
         prefs.setInt(key, 0);
       });
       _returnControllers.forEach((key, controller) {
-        controller.text = '0';
+        controller.text = '';
         prefs.setInt('${key}Return', 0);
       });
       _goodControllers.forEach((key, controller) {
-        controller.text = '0';
+        controller.text = '';
         prefs.setInt('${key}Good', 0);
       });
     });
@@ -132,10 +129,6 @@ class _MainPageState extends State<MainPage> {
           Column(
             children: [
               const PageAppBar(),
-              // const TitleAndPictureAtTheHeadOfThePage(
-              //   title: 'يا هلا بك في همزة',
-              //   imageUrl: AppImageAsset.appLogo,
-              // ),
               SizedBox(height: 25.h),
               Text(
                 _getFormattedDay(),

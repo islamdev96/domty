@@ -35,21 +35,6 @@ class WidgetDrawer extends StatelessWidget {
               Get.offAllNamed(AppRoute.aboutUsPage);
             },
           ),
-          // ListTile(
-          //   leading: const Icon(Icons.book, color: Colors.white),
-          //   title: const Text("اضف كتاب للبيع",
-          //       style: TextStyle(color: Colors.white)),
-          //   onTap: () {
-          //     Get.toNamed(AppRoute.bookAdd);
-          //   },
-          // ),
-          // ListTile(
-          //   leading: const Icon(Icons.book_online_sharp, color: Colors.white),
-          //   title: const Text("كتبي", style: TextStyle(color: Colors.white)),
-          //   onTap: () {
-          //     Get.toNamed(AppRoute.bookView);
-          //   },
-          // ),
         ],
       ),
     );
