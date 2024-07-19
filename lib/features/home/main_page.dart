@@ -1,4 +1,4 @@
-import 'package:domty/features/home/screen/summary_page.dart';
+import 'package:domty/features/home/end_of_the_day/summary_page.dart';
 import 'package:intl/intl.dart' as intl;
 import '../../all_export.dart';
 import 'data_table.dart';
@@ -41,6 +41,7 @@ class _MainPageState extends State<MainPage> {
   final double _maxScale = 2.0;
 
   final Map<String, int> _lastDeletedData = {};
+  bool _isDataDeleted = false;
 
   @override
   void initState() {
@@ -68,6 +69,7 @@ class _MainPageState extends State<MainPage> {
             ? (prefs.getInt('${key}Good') ?? 0).toString()
             : "";
       });
+      _isDataDeleted = false;
     });
   }
 
@@ -85,6 +87,8 @@ class _MainPageState extends State<MainPage> {
   }
 
   void _resetData() async {
+    if (_isDataDeleted) return;
+
     final prefs = await SharedPreferences.getInstance();
     _lastDeletedData.clear();
     setState(() {
@@ -103,20 +107,30 @@ class _MainPageState extends State<MainPage> {
         controller.text = '';
         prefs.setInt('${key}Good', 0);
       });
+      _isDataDeleted = true;
     });
   }
 
   void _restoreDeletedData() {
+    if (!_isDataDeleted) return;
+
     setState(() {
       _boxControllers.forEach((key, controller) {
-        controller.text = _lastDeletedData[key]?.toString() ?? '';
+        controller.text = _lastDeletedData[key] == 0
+            ? ''
+            : _lastDeletedData[key]?.toString() ?? '';
       });
       _returnControllers.forEach((key, controller) {
-        controller.text = _lastDeletedData['${key}Return']?.toString() ?? '';
+        controller.text = _lastDeletedData['${key}Return'] == 0
+            ? ''
+            : _lastDeletedData['${key}Return']?.toString() ?? '';
       });
       _goodControllers.forEach((key, controller) {
-        controller.text = _lastDeletedData['${key}Good']?.toString() ?? '';
+        controller.text = _lastDeletedData['${key}Good'] == 0
+            ? ''
+            : _lastDeletedData['${key}Good']?.toString() ?? '';
       });
+      _isDataDeleted = false;
     });
     _saveDataToSharedPreferences();
   }
@@ -269,7 +283,7 @@ class _MainPageState extends State<MainPage> {
             style: TextStyle(color: AppColors.white),
           ),
           style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 20),
+            padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
             backgroundColor: AppColors.primary,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),

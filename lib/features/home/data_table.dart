@@ -1,6 +1,6 @@
 // ignore_for_file: must_be_immutable
 
-import 'package:domty/features/home2/text_field_widget.dart';
+import 'package:domty/core/shared/text_field_widget.dart';
 
 import '../../all_export.dart';
 import 'utils.dart';
