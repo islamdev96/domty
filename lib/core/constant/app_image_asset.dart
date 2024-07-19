@@ -5,6 +5,7 @@ class AppImageAsset {
   static const String logo = "$rootImages/logoapp.png";
   static const String appLogo = '$rootImages/top/logo.png';
   static const String personImage = '$rootImages/top/islam.jpg';
+  static const String personImage2 = '$rootImages/top/islam2.jpg';
   static const String showYourBook = '$rootImages/top/showYourBook.png';
   static const String backupImage = '$rootImages/top/backup_image.jpg';
   static const String icons8favourite = '$rootSvg/22.gif';

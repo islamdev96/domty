@@ -1,5 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
+import 'package:domty/features/abut/image.dart';
+
 import '../../all_export.dart';
 
 class AboutUsPage extends StatelessWidget {
@@ -180,23 +182,8 @@ class AboutUsPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            Text(
-              'صورة من داخل التطبيق:',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.blue[900],
-              ),
-            ),
+            const ImageCarousel(),
             const SizedBox(height: 10),
-            Center(
-              child: Image.asset(
-                AppImageAsset.personImage,
-                height: 200,
-                width: 200,
-                fit: BoxFit.contain,
-              ),
-            ),
           ],
         ),
       ),
