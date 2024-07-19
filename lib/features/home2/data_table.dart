@@ -85,7 +85,7 @@ class _DataTableWidgetState extends State<DataTableWidget> {
       children: [
         'الاسم',
         "الكميه",
-        'إجمالي الصناديق',
+        'إجمالي البساكيت',
         'إجمالي القطع',
         'المرتجع',
         'الصالح'
@@ -150,8 +150,8 @@ class _DataTableWidgetState extends State<DataTableWidget> {
       children: [
         _buildTableCell('الإجمالي', true),
         _buildTableCell('$totalBoxes', false),
-        _buildTableCell(totalBoxEquivalent[1], false),
-        _buildTableCell(totalBoxEquivalent[0], false),
+        _buildTableCell(totalBoxEquivalent[1], false), // Box equivalents
+        _buildTableCell(totalBoxEquivalent[0], false), // Total pieces
         _buildTableCell('$totalReturns', false),
         _buildTableCell('', false),
       ],
