@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, library_private_types_in_public_api, unused_element
 
 import 'dart:io';
 
@@ -244,7 +244,6 @@ class _SummaryPageState extends State<SummaryPage> {
       await Share.shareXFiles([XFile(imagePath.path)],
           text: 'ملخص نهاية اليوم');
     } catch (e) {
-      print('Error taking screenshot: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('حدث خطأ أثناء مشاركة الملخص')),
       );
