@@ -1,7 +1,5 @@
-import 'package:domty/features/home/end_of_the_day/summary_page.dart';
 import 'package:intl/intl.dart' as intl;
 import '../../all_export.dart';
-import 'data_table.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});

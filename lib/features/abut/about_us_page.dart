@@ -1,7 +1,5 @@
 // ignore_for_file: deprecated_member_use
 
-import 'package:domty/features/abut/image.dart';
-
 import '../../all_export.dart';
 
 class AboutUsPage extends StatelessWidget {

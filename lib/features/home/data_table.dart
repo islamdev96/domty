@@ -1,9 +1,6 @@
 // ignore_for_file: must_be_immutable
 
-import 'package:domty/core/shared/text_field_widget.dart';
-
 import '../../all_export.dart';
-import 'utils.dart';
 
 class DataTableWidget extends StatefulWidget {
   final Map<String, TextEditingController> boxControllers;

@@ -1,5 +1,3 @@
-import 'package:carousel_slider/carousel_slider.dart';
-
 import '../../all_export.dart';
 
 //  افترض أن AppImageAsset.personImage عبارة عن قائمة من مسارات الصور
