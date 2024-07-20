@@ -1,11 +1,10 @@
-// ignore_for_file: library_private_types_in_public_api
+// ignore_for_file: use_build_context_synchronously, unused_element, library_private_types_in_public_api
 
-import 'package:flutter/material.dart';
-import 'package:screenshot/screenshot.dart';
-import 'summary_row.dart';
-import 'summary_calculations.dart';
-import 'summary_actions.dart';
-import 'summary_utils.dart';
+import 'dart:io';
+
+import 'package:intl/intl.dart' as intl;
+
+import '../../../all_export.dart';
 
 class SummaryPage extends StatefulWidget {
   final Map<String, int> initialSold;
@@ -33,32 +32,36 @@ class _SummaryPageState extends State<SummaryPage> {
   TextEditingController juiceReturnController = TextEditingController();
   TextEditingController juiceGoodController = TextEditingController();
 
+  final Map<String, String> arabicNames = {
+    'classic': 'كلاسيك',
+    'croissant': 'كرواسون',
+    'supreme': 'سوبريم',
+    'double': 'دبل',
+    'fino': 'فينو',
+    'basket': 'باسكت',
+    'aseer': 'عصير',
+  };
+
   @override
   void initState() {
     super.initState();
-    initializeControllers();
-  }
-
-  void initializeControllers() {
     soldControllers = widget.initialSold.map((key, value) => MapEntry(
         key,
         TextEditingController(
             text:
-                value == 0 ? '' : (value * getPiecesPerBox(key)).toString())));
+                value == 0 ? '' : (value * _getPiecesPerBox(key)).toString())));
     returnControllers = widget.initialReturns.map((key, value) => MapEntry(
         key, TextEditingController(text: value == 0 ? '' : value.toString())));
     goodControllers = widget.initialGood.map((key, value) => MapEntry(
         key, TextEditingController(text: value == 0 ? '' : value.toString())));
+
+    juiceSoldController.text = '';
+    juiceReturnController.text = '';
+    juiceGoodController.text = '';
   }
 
   @override
   void dispose() {
-    disposeControllers();
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  void disposeControllers() {
     for (var controller in soldControllers.values) {
       controller.dispose();
     }
@@ -71,96 +74,127 @@ class _SummaryPageState extends State<SummaryPage> {
     juiceSoldController.dispose();
     juiceReturnController.dispose();
     juiceGoodController.dispose();
+    _scrollController.dispose();
+    super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('ملخص نهاية اليوم'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.copy),
-            onPressed: () => copyToClipboard(context, getFullSummaryText()),
-            tooltip: 'نسخ الملخص',
-          ),
-        ],
-      ),
-      body: Screenshot(
-        controller: screenshotController,
-        child: SingleChildScrollView(
-          controller: _scrollController,
-          child: buildScreenshotContent(),
-        ),
-      ),
-    );
+  int _getPiecesPerBox(String key) {
+    switch (key) {
+      case 'classic':
+      case 'supreme':
+        return 30;
+      case 'croissant':
+      case 'double':
+        return 24;
+      case 'fino':
+        return 8;
+      case 'basket':
+        return 10;
+      case 'aseer':
+      default:
+        return 1;
+    }
   }
 
-  Widget buildScreenshotContent() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  double _getPricePerPiece(String key) {
+    if (key == 'fino') {
+      return 20.0;
+    } else {
+      return 8.5;
+    }
+  }
+
+  Widget _buildSummaryRow(String name) {
+    return Container(
+      padding: const EdgeInsets.all(8.0),
+      margin: const EdgeInsets.symmetric(vertical: 4.0),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(8.0),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
-            'ملخص نهاية اليوم',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Cairo',
-            ),
+          Text(
+            arabicNames[name] ?? name,
+            style: const TextStyle(fontSize: 16, fontFamily: 'Cairo'),
           ),
-          const SizedBox(height: 20),
-          ...buildSummaryRows(),
-          const SizedBox(height: 20),
-          buildTotalRevenue(),
-          const SizedBox(height: 20),
-          ...buildTotalSummaryItems(),
+          _buildQuantityColumn('مباع', soldControllers[name]!, (value) {
+            setState(() {
+              soldControllers[name]!.text = value;
+            });
+          }),
+          _buildQuantityColumn('هالك', returnControllers[name]!, (value) {
+            setState(() {
+              returnControllers[name]!.text = value;
+            });
+          }),
+          _buildQuantityColumn('صالح', goodControllers[name]!, (value) {
+            setState(() {
+              goodControllers[name]!.text = value;
+            });
+          }),
         ],
       ),
     );
   }
 
-  List<Widget> buildSummaryRows() {
-    return [
-      for (var key in soldControllers.keys)
-        SummaryRow(
-          name: key,
-          soldController: soldControllers[key]!,
-          returnController: returnControllers[key]!,
-          goodController: goodControllers[key]!,
-          onChanged: () => setState(() {}),
+  Widget _buildQuantityColumn(String label, TextEditingController controller,
+      Function(String) onChanged) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            fontFamily: 'Cairo',
+            fontWeight: FontWeight.bold,
+          ),
         ),
-      SummaryRow(
-        name: 'عصير',
-        soldController: juiceSoldController,
-        returnController: juiceReturnController,
-        goodController: juiceGoodController,
-        onChanged: () => setState(() {}),
-      ),
-    ];
-  }
-
-  Widget buildTotalRevenue() {
-    return Text(
-      'نقدية: ${formatCurrency(calculateTotalRevenue(soldControllers, returnControllers, goodControllers, juiceSoldController, juiceReturnController, juiceGoodController))}',
-      style: const TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.bold,
-        fontFamily: 'Cairo',
-      ),
+        SizedBox(
+          width: 60,
+          child: TextField(
+            controller: controller,
+            keyboardType: TextInputType.number,
+            textAlign: TextAlign.center,
+            decoration: const InputDecoration(
+              contentPadding: EdgeInsets.all(8.0),
+            ),
+            onChanged: (value) {
+              if (value.isEmpty) {
+                controller.text = '';
+              }
+              onChanged(value);
+            },
+          ),
+        ),
+      ],
     );
   }
 
-  List<Widget> buildTotalSummaryItems() {
-    return [
-      buildSummaryItem('إجمالي القطع المباعة', calculateTotalSold()),
-      buildSummaryItem('إجمالي القطع الهالكة', calculateTotalReturns()),
-      buildSummaryItem('إجمالي القطع الصالحة', calculateTotalGood()),
-    ];
+  double calculateTotalRevenue() {
+    double totalRevenue = 0.0;
+
+    soldControllers.forEach((key, controller) {
+      int soldQuantity = int.tryParse(controller.text) ?? 0;
+      int returnQuantity = int.tryParse(returnControllers[key]!.text) ?? 0;
+      int goodQuantity = int.tryParse(goodControllers[key]!.text) ?? 0;
+      double pricePerPiece = _getPricePerPiece(key);
+      totalRevenue +=
+          (soldQuantity - returnQuantity - goodQuantity) * pricePerPiece;
+    });
+
+    // Add juice cartons to the revenue
+    int juiceSoldQuantity = int.tryParse(juiceSoldController.text) ?? 0;
+    int juiceReturnQuantity = int.tryParse(juiceReturnController.text) ?? 0;
+    int juiceGoodQuantity = int.tryParse(juiceGoodController.text) ?? 0;
+    totalRevenue +=
+        (juiceSoldQuantity - juiceReturnQuantity - juiceGoodQuantity) * 180.0;
+
+    return totalRevenue;
   }
 
-  Widget buildSummaryItem(String label, int value) {
+  Widget _buildSummaryItem(String label, int value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
@@ -183,30 +217,206 @@ class _SummaryPageState extends State<SummaryPage> {
     );
   }
 
-  int calculateTotalSold() {
-    return soldControllers.values
+  Future<void> _takeAndShareScreenshot() async {
+    try {
+      await _scrollToTop();
+      final fullHeight = _scrollController.position.maxScrollExtent +
+          MediaQuery.of(context).size.height;
+      final Uint8List image = await screenshotController.captureFromLongWidget(
+        InheritedTheme.captureAll(
+          context,
+          Material(
+            child: _buildScreenshotContent(),
+          ),
+        ),
+        delay: const Duration(milliseconds: 100),
+        constraints: BoxConstraints(
+          maxHeight: fullHeight,
+          maxWidth: MediaQuery.of(context).size.width,
+        ),
+      );
+
+      final directory = await getApplicationDocumentsDirectory();
+      final imagePath =
+          await File('${directory.path}/summary_screenshot.png').create();
+      await imagePath.writeAsBytes(image);
+
+      await Share.shareXFiles([XFile(imagePath.path)],
+          text: 'ملخص نهاية اليوم');
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('حدث خطأ أثناء مشاركة الملخص')),
+      );
+    }
+  }
+
+  Future<void> _scrollToTop() async {
+    await _scrollController.animateTo(
+      0,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeOut,
+    );
+  }
+
+  Widget _buildScreenshotContent() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'ملخص نهاية اليوم',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Cairo',
+            ),
+          ),
+          const SizedBox(height: 20),
+          for (var key in soldControllers.keys) _buildSummaryRow(key),
+          Container(
+            padding: const EdgeInsets.all(8.0),
+            margin: const EdgeInsets.symmetric(vertical: 4.0),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'عصير',
+                  style: TextStyle(fontSize: 16, fontFamily: 'Cairo'),
+                ),
+                _buildQuantityColumn('مباع', juiceSoldController, (value) {
+                  if (value.isNotEmpty && int.tryParse(value) == null) {
+                    return;
+                  }
+                  setState(() {});
+                }),
+                _buildQuantityColumn('هالك', juiceReturnController, (value) {
+                  if (value.isNotEmpty && int.tryParse(value) == null) {
+                    return;
+                  }
+                  setState(() {});
+                }),
+                _buildQuantityColumn('صالح', juiceGoodController, (value) {
+                  if (value.isNotEmpty && int.tryParse(value) == null) {
+                    return;
+                  }
+                  setState(() {});
+                }),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'نقدية: ${intl.NumberFormat('#,##0.00', 'ar_EG').format(calculateTotalRevenue())}',
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Cairo',
+            ),
+          ),
+          const SizedBox(height: 20),
+          _buildSummaryItem(
+            'إجمالي القطع المباعة',
+            soldControllers.values
+                    .map((controller) => int.tryParse(controller.text) ?? 0)
+                    .reduce((a, b) => a + b) +
+                (int.tryParse(juiceSoldController.text) ?? 0),
+          ),
+          _buildSummaryItem(
+            'إجمالي القطع الهالكة',
+            returnControllers.values
+                    .map((controller) => int.tryParse(controller.text) ?? 0)
+                    .reduce((a, b) => a + b) +
+                (int.tryParse(juiceReturnController.text) ?? 0),
+          ),
+          _buildSummaryItem(
+            'إجمالي القطع الصالحة',
+            goodControllers.values
+                    .map((controller) => int.tryParse(controller.text) ?? 0)
+                    .reduce((a, b) => a + b) +
+                (int.tryParse(juiceGoodController.text) ?? 0),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _copyToClipboard() async {
+    String summaryText = 'ملخص نهاية اليوم\n\n';
+
+    for (var key in soldControllers.keys) {
+      summaryText += '${arabicNames[key] ?? key}:\n';
+      summaryText +=
+          'مباع: ${soldControllers[key]!.text.isEmpty ? '0' : soldControllers[key]!.text}\n';
+      summaryText +=
+          'هالك: ${returnControllers[key]!.text.isEmpty ? '0' : returnControllers[key]!.text}\n';
+      summaryText +=
+          'صالح: ${goodControllers[key]!.text.isEmpty ? '0' : goodControllers[key]!.text}\n\n';
+    }
+
+    summaryText += 'عصير:\n';
+    summaryText +=
+        'مباع: ${juiceSoldController.text.isEmpty ? '0' : juiceSoldController.text}\n';
+    summaryText +=
+        'هالك: ${juiceReturnController.text.isEmpty ? '0' : juiceReturnController.text}\n';
+    summaryText +=
+        'صالح: ${juiceGoodController.text.isEmpty ? '0' : juiceGoodController.text}\n\n';
+
+    summaryText +=
+        'نقدية: ${intl.NumberFormat('#,##0.00', 'ar_EG').format(calculateTotalRevenue())}\n\n';
+
+    int totalSold = soldControllers.values
             .map((controller) => int.tryParse(controller.text) ?? 0)
             .reduce((a, b) => a + b) +
         (int.tryParse(juiceSoldController.text) ?? 0);
-  }
-
-  int calculateTotalReturns() {
-    return returnControllers.values
+    int totalReturns = returnControllers.values
             .map((controller) => int.tryParse(controller.text) ?? 0)
             .reduce((a, b) => a + b) +
         (int.tryParse(juiceReturnController.text) ?? 0);
-  }
-
-  int calculateTotalGood() {
-    return goodControllers.values
+    int totalGood = goodControllers.values
             .map((controller) => int.tryParse(controller.text) ?? 0)
             .reduce((a, b) => a + b) +
         (int.tryParse(juiceGoodController.text) ?? 0);
+
+    summaryText += 'إجمالي القطع المباعة: $totalSold\n';
+    summaryText += 'إجمالي القطع الهالكة: $totalReturns\n';
+    summaryText += 'إجمالي القطع الصالحة: $totalGood\n';
+
+    await Clipboard.setData(ClipboardData(text: summaryText));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('تم نسخ الملخص إلى الحافظة')),
+    );
   }
 
-  String getFullSummaryText() {
-    // Implement this method to return the full summary text
-    // This should include all the details for clipboard copying
-    return ""; // Placeholder
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('ملخص نهاية اليوم'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.copy),
+            onPressed: _copyToClipboard,
+            tooltip: 'نسخ الملخص',
+          ),
+          // IconButton(
+          //   icon: const Icon(Icons.share),
+          //   onPressed: _takeAndShareScreenshot,
+          //   tooltip: 'مشاركة الملخص',
+          // ),
+        ],
+      ),
+      body: Screenshot(
+        controller: screenshotController,
+        child: SingleChildScrollView(
+          controller: _scrollController,
+          child: _buildScreenshotContent(),
+        ),
+      ),
+    );
   }
 }
