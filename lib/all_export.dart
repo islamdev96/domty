@@ -23,7 +23,7 @@ export 'package:share_plus/share_plus.dart';
 export 'package:flutter/services.dart';
 export 'package:domty/core/shared/text_field_widget.dart';
 export 'package:domty/features/home/utils.dart';
-export 'package:domty/features/end/summary_page.dart';
+export 'package:domty/features/home/summary_page.dart';
 
 export 'package:domty/features/home/data_table.dart';
 export 'package:domty/features/abut/image.dart';
